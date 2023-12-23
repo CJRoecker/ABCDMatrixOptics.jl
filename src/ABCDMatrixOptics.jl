@@ -3,11 +3,11 @@ module ABCDMatrixOptics
 using Parameters
 using PrecompileTools
 
-include("utilities.jl")
 include("beam.jl")
 include("elements.jl")
 include("propagate.jl")
 include("plots-recipes.jl")
+include("utilities.jl")
 
 
 @setup_workload begin
