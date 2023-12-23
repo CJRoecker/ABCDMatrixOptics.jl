@@ -20,6 +20,7 @@ julia> beam.w ≈ 0
 true
 ```
 """
+
 function propagate(e::Element, b::GeometricBeam{T}) where T
     w, k = transfer_matrix(e) * [b.w, b.k]
     return GeometricBeam{T}(w, k, b.zpos + dz(e))
@@ -46,8 +47,14 @@ function propagate(es::Vector{<:Element}, b::AbstractBeam)
     return reduce((a,b) -> propagate(b, a), es, init=b)
 end
 
-Base.:*(e::Union{Matrix, Element, Vector{<:Element}}, b::AbstractBeam) = propagate(e, b)
-# Base.:*(e::Union{Matrix, Element, Vector{Union{<:Element, MAElement}}}, b::AbstractBeam) = propagate(e, b)
+function propagate(es::Vector{<:Any}, b::AbstractBeam)
+    return reduce((a,b) -> propagate(b, a), es, init=b)
+end
+
+# Vector{Union{<:Element, MAElement}}
+# Base.:*(e::Union{Matrix, Element, Vector{<:Element}}, b::AbstractBeam) = propagate(e, b)
+Base.:*(e::Union{Matrix, Element, MAElement, Vector{<:Element}}, b::AbstractBeam) = propagate(e, b)
+Base.:*(e::Union{Matrix, Element, MAElement, Vector{<:Any}}, b::AbstractBeam) = propagate(e, b)
 Base.:*(a::Element, b::Element) = transfer_matrix(a) * transfer_matrix(b)
 Base.:*(a::Matrix, b::Element) = a * transfer_matrix(b)
 Base.:*(a::Vector{<:Element}, b::Vector) = transfer_matrix(a) * b 
@@ -67,7 +74,7 @@ Base.:*(a::Element, mb::MAElement) = MAElement(transfer_matrix(a) * transfer_mat
 Base.:*(a::Matrix, mb::MAElement) = MAElement(a * transfer_matrix(mb.e), a * mb.v) #Ergebnis noch verifizieren
 Base.:*(ma::MAElement, b::Element) = MAElement(transfer_matrix(ma.e) * transfer_matrix(b), ma.v) #Misaligned Element * Element, Ergebnis noch verifizieren, 
 Base.:*(ma::MAElement, mb::MAElement) = MAElement(transfer_matrix(ma.e) * transfer_matrix(mb.e), ma.e*mb.v + ma.v) #Misaligned Element * Misaligned Element, Ergebnis noch verifizieren, 
-Base.:*(ma::MAElement, b::GeometricBeam) = propagate(ma, b)
+# Base.:*(ma::MAElement, b::GeometricBeam) = propagate(ma, b)
 
 
 """

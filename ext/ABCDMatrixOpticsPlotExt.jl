@@ -4,7 +4,8 @@ module ABCDMatrixOpticsPlotExt
 using ABCDMatrixOptics, Colors, Interpolations, RecipesBase
 
 mutable struct WithBeam
-    system::Vector{<:Element}
+    # system::Vector{<:Element}
+    system::Vector{<:Any}
     beam::ABCDMatrixOptics.GaussianBeam
 end
 
