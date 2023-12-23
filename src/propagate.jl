@@ -47,13 +47,19 @@ function propagate(es::Vector{<:Element}, b::AbstractBeam)
 end
 
 Base.:*(e::Union{Matrix, Element, Vector{<:Element}}, b::AbstractBeam) = propagate(e, b)
+# Base.:*(e::Union{Matrix, Element, Vector{Union{<:Element, MAElement}}}, b::AbstractBeam) = propagate(e, b)
 Base.:*(a::Element, b::Element) = transfer_matrix(a) * transfer_matrix(b)
 Base.:*(a::Matrix, b::Element) = a * transfer_matrix(b)
 Base.:*(a::Vector{<:Element}, b::Vector) = transfer_matrix(a) * b 
+# Base.:*(a::Vector{Union{<:Element, MAElement}}, b::Vector) = transfer_matrix(a) * b 
+
+
 
 # overwritten standard functions for misaligned elements
 Base.:+(a::GeometricBeam, b::GeometricBeam) = GeometricBeam(w = (a.w + b.w), k = (a.k + b.k))
 Base.:+(a::GeometricBeam, b::MAVector) = GeometricBeam(w = (a.w + b.s), k = (a.k + b.σ))
+Base.:+(a::MAVector, b::GeometricBeam) = GeometricBeam(w = (b.w + a.s), k = (b.k + a.σ))
+Base.:+(a::Vector, b::MAVector) = [a[1]+b.s, a[2]+b.σ]
 Base.:+(a::MAVector, b::MAVector) = MAVector(s = (a.s + b.s), σ = (a.σ + b.σ))
 Base.:*(a::Matrix, b::MAVector) = MAVector(s = (a[1,1]*b.s + a[1,2]*b.σ), σ = (a[2,1]*b.s + a[2,2]*b.σ))
 Base.:*(a::Element, b::MAVector) = transfer_matrix(a) * b
@@ -61,7 +67,7 @@ Base.:*(a::Element, mb::MAElement) = MAElement(transfer_matrix(a) * transfer_mat
 Base.:*(a::Matrix, mb::MAElement) = MAElement(a * transfer_matrix(mb.e), a * mb.v) #Ergebnis noch verifizieren
 Base.:*(ma::MAElement, b::Element) = MAElement(transfer_matrix(ma.e) * transfer_matrix(b), ma.v) #Misaligned Element * Element, Ergebnis noch verifizieren, 
 Base.:*(ma::MAElement, mb::MAElement) = MAElement(transfer_matrix(ma.e) * transfer_matrix(mb.e), ma.e*mb.v + ma.v) #Misaligned Element * Misaligned Element, Ergebnis noch verifizieren, 
-
+Base.:*(ma::MAElement, b::GeometricBeam) = propagate(ma, b)
 
 
 """
@@ -83,7 +89,16 @@ julia> trace([ThinLens(10), FreeSpace(10)], GeometricBeam(w=10.0, k=0.0))
  GeometricBeam{Float64}(0.0, -1.0, 10.0)
 ```
 """
-function trace(elems::Vector{<:Element}, b0::B) where B
+# function trace(elems::Vector{<:Element}, b0::B) where B
+#     bs = Vector{B}(undef, 1)
+#     bs[1] = b0
+#     for (idx, e) in enumerate(elems)
+#         push!(bs, trace(e, bs[end])...)
+#     end
+#     return bs
+# end
+
+function trace(elems::Vector{Union{<:Element, MAElement}}, b0::B) where B
     bs = Vector{B}(undef, 1)
     bs[1] = b0
     for (idx, e) in enumerate(elems)
@@ -92,8 +107,10 @@ function trace(elems::Vector{<:Element}, b0::B) where B
     return bs
 end
 
-
 function trace(elems::Element, b0::B) where B
     return [propagate(elems, b0)]
 end
 
+function trace(elems::MAElement, b0::B) where B
+    return [propagate(elems, b0)]
+end

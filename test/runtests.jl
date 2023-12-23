@@ -102,13 +102,6 @@ using Plots
 
     end
 
-    @testset "add geometric Beams" begin
-        a = GeometricBeam(w=10.0, k=0.1)
-        b = GeometricBeam(w=5.0, k=0.05)
-        @test a+b == GeometricBeam(w=15.0, k=0.15)
-    end
-
-
     @testset "Gaussian Beam" begin
         beam = GaussianBeam(w0=100e-6)
         @test ABCDMatrixOptics.zR(beam) ≈ 0.049630215696521214
@@ -138,6 +131,14 @@ using Plots
         p = plot([FreeSpace(100e-3)], GaussianBeam(w0=100e-6, λ=100e-9, n=1.3, zpos=0))
         @test p == p
     end
+
+    ## Testsets misaligned Elements    
+    @testset "add geometric Beams" begin
+        a = GeometricBeam(w=10.0, k=0.1)
+        b = GeometricBeam(w=5.0, k=0.05)
+        @test a+b == GeometricBeam(w=15.0, k=0.15)
+    end
+
 
     return true
 end
