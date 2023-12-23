@@ -51,7 +51,9 @@ Base.:*(a::Element, b::Element) = transfer_matrix(a) * transfer_matrix(b)
 Base.:*(a::Matrix, b::Element) = a * transfer_matrix(b)
 Base.:*(a::Vector{<:Element}, b::Vector) = transfer_matrix(a) * b 
 
+# overwritten standard functions for misaligned elements
 Base.:+(a::GeometricBeam, b::GeometricBeam) = GeometricBeam(w = (a.w + b.w), k = (a.k + b.k))
+Base.:+(a::GeometricBeam, b::MAVector) = GeometricBeam(w = (a.w + b.s), k = (a.k + b.σ))
 Base.:+(a::MAVector, b::MAVector) = MAVector(s = (a.s + b.s), σ = (a.σ + b.σ))
 Base.:*(a::Matrix, b::MAVector) = MAVector(s = (a[1,1]*b.s + a[1,2]*b.σ), σ = (a[2,1]*b.s + a[2,2]*b.σ))
 Base.:*(a::Element, b::MAVector) = transfer_matrix(a) * b

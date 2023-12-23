@@ -2,6 +2,10 @@ using ABCDMatrixOptics
 using Test
 using Plots
 
+#To Do
+# add test Misaligned Lens
+# add test Misaligned Mirror
+
 @testset "ABCDMatrixOptics.jl" begin
 
     @testset "Base.≈" begin

@@ -1,4 +1,4 @@
-export Element, FreeSpace, Interface, ThinLens, MAThinLens, ThickLens, Mirror, MAElement, MAMirror
+export Element, FreeSpace, Interface, ThinLens, MAThinLens, ThickLens, Mirror, MAMirror
 export transfer_matrix
 
 abstract type Element{T} end
