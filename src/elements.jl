@@ -1,4 +1,4 @@
-export Element, FreeSpace, Interface, ThinLens, MAThinLens, ThickLens, Mirror, MAElement
+export Element, FreeSpace, Interface, ThinLens, MAThinLens, ThickLens, Mirror, MAElement, MAMirror
 export transfer_matrix
 
 abstract type Element{T} end
@@ -95,8 +95,16 @@ Per default `Inf`, so a flat mirror.
 """
 @with_kw_noshow struct Mirror{T} <: Element{T}
     R::T = Inf
-    # Δθ::T=typeof(R)(0)
+    θ::T = 0   # misalignment: angle
+    Δ::T = 0   # misalignment: offset 
 end
+
+"""
+    Mirror(R)
+
+Creates a Mirror with Radius of curvature `R`.
+"""
+Mirror(R::T) where {T} = Mirror{T}(R, 0, 0)
 
 struct userDefinedElement{T<:Number} <: Element{T}
     m::Matrix{T}
@@ -113,6 +121,7 @@ struct MAVector{T<:Number}
 end
 
 MAVector(e::ThinLens) = MAVector{typeof(e.Δ/e.f)}(0, e.Δ/e.f)
+MAVector(e::Mirror) = MAVector{typeof(e.Δ/e.R)}(0, 2*(e.Δ/e.R+e.θ))
 MAVector(;s, σ) = MAVector(s, σ) 
 
 """
@@ -126,16 +135,23 @@ struct MAElement{T<:Number}
 end
 
 MAElement(e::ThinLens) = MAElement{typeof(e.f)}(e, MAVector(e))
+MAElement(e::Mirror) = MAElement{promote_type(typeof(e.R), typeof(e.θ), typeof(e.Δ))}(e, MAVector(e))
 MAElement(e::Matrix, v::MAVector) = MAElement(userDefinedElement(e),v)
 
 
 """
     MAThinLens(f)
 
-Creates a thin lens with focal length `f`, angular misa 'θ', and displacement 'Δ'.
+Creates a thin lens with focal length `f`, angular misalignment 'θ', and displacement 'Δ'.
 """
 MAThinLens(f, θ, Δ) = MAElement(ThinLens{promote_type(typeof(f), typeof(θ), typeof(Δ))}(promote(f, θ, Δ)...))
 
+"""
+    Mirror(R, θ, Δ)
+
+Creates a misaligned Mirror with Radius of curvature `R`, angular misalignment 'θ', and displacement 'Δ'..
+"""
+MAMirror(R, θ, Δ) = MAElement(Mirror{promote_type(typeof(R), typeof(θ), typeof(Δ))}(promote(R, θ, Δ)...))
 
 # definitions of dz
 """
