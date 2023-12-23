@@ -105,7 +105,7 @@ julia> trace([ThinLens(10), FreeSpace(10)], GeometricBeam(w=10.0, k=0.0))
 #     return bs
 # end
 
-function trace(elems::Vector{Union{<:Element, MAElement}}, b0::B) where B
+function trace(elems::Vector{<:Any}, b0::B) where B
     bs = Vector{B}(undef, 1)
     bs[1] = b0
     for (idx, e) in enumerate(elems)
