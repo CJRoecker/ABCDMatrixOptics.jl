@@ -1,4 +1,4 @@
-export analyzeSystemGeometrically
+export analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates
 
 """
     removeMA(vma::Vector{<:Any})
@@ -33,6 +33,9 @@ end
 
 #exampe usage
 # par_coordinates, div_coordinates = analyzeSystemGeometrically(SystemMatrix=M)
+# quiver(div_coordinates.z,div_coordinates.w, quiver=(div_coordinates.dz,div_coordinates.dw))
+# quiver(par_coordinates.z,par_coordinates.w, quiver=(par_coordinates.dz,par_coordinates.dw))
+# LEGACY
 # quiver(div_coordinates[1],div_coordinates[2], quiver=(div_coordinates[3],div_coordinates[4]))
 # quiver(par_coordinates[1],par_coordinates[2], quiver=(par_coordinates[3],par_coordinates[4]))
 
@@ -76,7 +79,9 @@ end
 
 Extract the coordinates of one GeometricRay
 """
-function getGeoRayCoordinates(vect::Vector{GeometricBeam{T}} where T; x =[], y=[], u=[], v=[])
+function getGeoRayCoordinates(vect::Vector{GeometricBeam{T}} where T; 
+    x =Vector{Float64}(undef,0), y=Vector{Float64}(undef,0), 
+    u=Vector{Float64}(undef,0), v=Vector{Float64}(undef,0))
     for i in eachindex(vect)
         if i==1 
             continue 
@@ -103,7 +108,8 @@ function getGeoRayCoordinates(vectvect::Vector{Vector{GeometricBeam{T}}} where T
             coordinateVect = getGeoRayCoordinates(vect; x=coordinateVect[1], y=coordinateVect[2], u=coordinateVect[3], v=coordinateVect[4])
         end
     end
-    return coordinateVect
+    # return coordinateVect
+    return GeoRayCoords(coordinateVect[1], coordinateVect[2], coordinateVect[3], coordinateVect[4])
 end
 
 """

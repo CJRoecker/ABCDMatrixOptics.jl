@@ -3,6 +3,13 @@ export transfer_matrix
 
 abstract type Element{T} end
 
+struct GeoRayCoords{T<:Any}
+    z::Vector{T}
+    w::Vector{T}
+    dz::Vector{T}
+    dw::Vector{T}
+end
+
 
 """
     FreeSpace(dz)

@@ -3,6 +3,9 @@ module ABCDMatrixOpticsPlotExt
 
 using ABCDMatrixOptics, Colors, Interpolations, RecipesBase
 
+#-----------------------------------------------------------------
+#-----------------------------------------------------------------
+# CREATE RECIPE FOR GAUSSIAN BEAMS
 mutable struct WithBeam
     system::Vector{<:Element}
     beam::ABCDMatrixOptics.GaussianBeam
@@ -77,3 +80,44 @@ end
     WithBeam(system, beam)
 end
 
+
+#-----------------------------------------------------------------
+#-----------------------------------------------------------------
+# CREATE RECIPE FOR GEOMETRIC  RAYS
+# mutable struct WithGeoRays
+#     system::Vector{<:Element}
+#     raycoords::ABCDMatrixOptics.GeoRayCoords
+# end
+
+# # type recipe, e.g. for `plot(WithBeam(system, beam))`
+# @recipe f(::Type{WithGeoRays}, data::WithGeoRays) = begin
+#     # seriestype := :shape
+#     # linecolor --> color(data.beam.λ)
+#     # fillcolor --> color(data.beam.λ)
+#     # fillalpha --> 0.1
+#     # label --> string(data.beam.λ)
+#     xguide --> "Distance"
+#     yguide --> "Transversal Coordinate"
+#     # # choose a very large number of discretizations to have some
+#     # # chance of approximating minimum waist radii decently
+#     # ds = ABCDMatrixOptics.discretize(data.system, 200)
+#     # N = length(ds) + 1
+#     Tx = typeof(float(data.raycoords.x))
+#     Ty = typeof(float(data.raycoords.y))
+#     Tu = typeof(float(data.raycoords.u))
+#     Tv = typeof(float(data.raycoords.v))
+    
+#     Tz = typeof(float(data.beam.zpos))
+#     ws = Vector{Tx}(undef, N)
+#     zs = Vector{Tz}(undef, N)
+#     ws[1] = ABCDMatrixOptics.w(data.beam)
+#     zs[1] = data.beam.zpos
+#     beam = data.beam
+#     for i = 1:length(ds)
+#         beam = ds[i] * beam
+#         ws[i+1] = ABCDMatrixOptics.w(beam)
+#         zs[i+1] = beam.zpos 
+#     end
+#     xs, ys = vcat(zs, reverse(zs)), vcat(ws, (-1.0) .* reverse(ws))
+#     [(xs[i], ys[i]) for i in 1:length(xs)]
+# end
