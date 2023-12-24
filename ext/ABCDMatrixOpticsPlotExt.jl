@@ -75,6 +75,5 @@ end
 # user recipe, e.g. for `plot(system, beam)`
 @recipe f(system::Vector{<:Element}, beam::ABCDMatrixOptics.GaussianBeam) =
     WithBeam(system, beam)
-
-
 end
+

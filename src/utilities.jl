@@ -1,3 +1,4 @@
+export analyzeSystemGeometrically
 
 """
     removeMA(vma::Vector{<:Any})
@@ -27,31 +28,20 @@ function sortElement(el::Element)
     return el
 end
 
-# Genereller Workflow: mit Rays Raw-Beams erzeugen. Einen Raw-Beam durch system tracen => in Geometric_quiver schmeißen, fertig!
+# General workflow: use create rays to generate beams. 
+# trace the generated beam through the System
 
-# funktioniert nicht da plots.jl nicht teil des package ist => Recipe
-# ersatzworkflow: Funktion kopieren und in REPL einfügen
-function Geometric_quiver(v::Vector{GeometricBeam{T}} where T; createnew=true)
-    i=2
-    if createnew
-        p1 = plot()
-    end
-    for i in eachindex(v)
-        if i==1 
-            continue 
-        elseif i==2
-            if createnew
-                p1 = quiver([v[i-1].zpos], [v[i-1].w], quiver=([v[i].zpos-v[i-1].zpos], [v[i].w-v[i-1].w]), show=true, c=:black)
-            else    
-                p1 = quiver!([v[i-1].zpos], [v[i-1].w], quiver=([v[i].zpos-v[i-1].zpos], [v[i].w-v[i-1].w]), show=true, c=:black)
-            end
-        else
-            quiver!([v[i-1].zpos], [v[i-1].w], quiver=([v[i].zpos-v[i-1].zpos], [v[i].w-v[i-1].w]), c=:black)
-        end
-    end
-    return p1
-end
+#exampe usage
+# par_coordinates, div_coordinates = analyzeSystemGeometrically(SystemMatrix=M)
+# quiver(div_coordinates[1],div_coordinates[2], quiver=(div_coordinates[3],div_coordinates[4]))
+# quiver(par_coordinates[1],par_coordinates[2], quiver=(par_coordinates[3],par_coordinates[4]))
 
+"""
+    create_rays(;n = 5, xmin = -10, xmax = 10, kmin = -0.1, kmax = 0.1)
+
+create a number of n parallel(k=0) and diverging(w=0) rays ranging
+from xmin to xmax and kmin and kmax, respectively.
+"""
 function create_rays(;n = 5, xmin = -10, xmax = 10, kmin = -0.1, kmax = 0.1)
     parallel_rays = Vector{GeometricBeam{Float64}}(undef, 0)
     divergent_rays = Vector{GeometricBeam{Float64}}(undef, 0)
@@ -66,6 +56,13 @@ function create_rays(;n = 5, xmin = -10, xmax = 10, kmin = -0.1, kmax = 0.1)
     return parallel_rays, divergent_rays
 end
 
+"""
+    trace_all(rays::Vector{GeometricBeam{T}} where T, M)
+
+This function traces n rays through a system M with m elements
+    Tracing one ray through a system M with m elements yields m new rays
+    The function returns a Vector of length n containing each m Vectors  
+"""
 function trace_all(rays::Vector{GeometricBeam{T}} where T, M)
     collection = Vector{Vector{GeometricBeam{Float64}}}(undef,length(rays))
     for i in eachindex(collection)
@@ -74,20 +71,54 @@ function trace_all(rays::Vector{GeometricBeam{T}} where T, M)
     return collection
 end
 
-# same wie für oben: muss in REPL kopiert werden 
-function quiver_all(collection)
-    for i in eachindex(collection)
-        if i == 1
-            display(Geometric_quiver(collection[i]))
+"""
+    getGeoRayCoordinates(vect::Vector{GeometricBeam{T}} where T; x =[], y=[], u=[], v=[])
+
+Extract the coordinates of one GeometricRay
+"""
+function getGeoRayCoordinates(vect::Vector{GeometricBeam{T}} where T; x =[], y=[], u=[], v=[])
+    for i in eachindex(vect)
+        if i==1 
+            continue 
         else
-            display(Geometric_quiver(collection[i], createnew = false))
-        end    
+            push!(x, vect[i-1].zpos)
+            push!(y, vect[i-1].w)   
+            push!(u, vect[i].zpos-vect[i-1].zpos)
+            push!(v, vect[i].w-vect[i-1].w)
+        end
     end
+    return [x,y,u,v]    
 end
 
-#exampe usage
-# p,d = ABCDMatrixOptics.create_rays(n=10)
-# cld = ABCDMatrixOptics.trace_all(d,M)  # collection of traces of all divergent rays
-# clp = ABCDMatrixOptics.trace_all(p,M)  # collection of traces of all parallel rays
-# quiver_all(cld)
-# quiver_all(clp)
+"""
+    getGeoRayCoordinates(vectvect::Vector{Vector{GeometricBeam{T}}} where T, coordinateVect=[])
+
+Extract all the coordinates of a Vector of Geometric Rays
+"""
+function getGeoRayCoordinates(vectvect::Vector{Vector{GeometricBeam{T}}} where T, coordinateVect=[])
+    for (i,vect) in enumerate(vectvect)
+        if i ==1
+            coordinateVect = getGeoRayCoordinates(vect)
+        else
+            coordinateVect = getGeoRayCoordinates(vect; x=coordinateVect[1], y=coordinateVect[2], u=coordinateVect[3], v=coordinateVect[4])
+        end
+    end
+    return coordinateVect
+end
+
+"""
+    analyzeSystemGeometrically(;SystemMatrix, n=10)
+
+convenience wrapper for standard workflow: 
+    1. create rays for calculation
+    2. Trace rays through the system
+    3. Extract and return the coordinates of the vectors
+"""
+function analyzeSystemGeometrically(;SystemMatrix, n=10)
+    par_rays, div_rays = ABCDMatrixOptics.create_rays(n=n);
+    div_collection = ABCDMatrixOptics.trace_all(div_rays, SystemMatrix);  # collection of traces of all divergent rays
+    par_collection = ABCDMatrixOptics.trace_all(par_rays, SystemMatrix);  # collection of traces of all parallel rays
+    div_coordinates = ABCDMatrixOptics.getGeoRayCoordinates(div_collection);
+    par_coordinates = ABCDMatrixOptics.getGeoRayCoordinates(par_collection);
+    return par_coordinates, div_coordinates
+end
