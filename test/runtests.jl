@@ -133,10 +133,35 @@ using Plots
     end
 
     ## Testsets misaligned Elements    
-    @testset "add geometric Beams" begin
-        a = GeometricBeam(w=10.0, k=0.1)
-        b = GeometricBeam(w=5.0, k=0.05)
-        @test a+b == GeometricBeam(w=15.0, k=0.15)
+    @testset "displaced thin lens" begin
+        f_1 = 1000e-3
+        f_2 = f_1
+        Δx = 10e-3      #displacement of thin lens: Magni 1987: Δθ = Displacement Δx/focal length f_2
+
+        # create 1:1 telescope with misaligned second lens
+        fs1 = FreeSpace(f_1)
+        l1 = ThinLens(f_1)
+        fs12 = FreeSpace(f_1 + f_2)
+        ml2 = MAThinLens(f_2, 0, Δx)    #This is the displaced(misaligned) lens
+        fs2 = FreeSpace(f_2)
+
+        # create misaligned optical system from elements
+        MA = [fs1, l1, fs12, ml2, fs2]  
+
+        # create simple, single rays
+        beam_angled = GeometricBeam(w=0, k=0.1e-1)  # ray hitting the center of the misaligned thin lens
+        beam_onAxis = GeometricBeam(w=0.0, k=0.0)   # perfect on-axis ray of the aligned system
+        beam_parallel = GeometricBeam(w=-Δx, k=0)
+
+        beam_angled_propagated_MA = MA*beam_angled;
+        @test beam_angled_propagated_MA.w == Δx
+
+        beam_onAxis_propagated_MA = MA*beam_onAxis;
+        @test beam_onAxis_propagated_MA.w == Δx
+        @test beam_onAxis_propagated_MA.k == Δx/f_2
+
+        beam_parallel_propagated_MA = MA*beam_parallel;
+        @test beam_parallel_propagated_MA.k == Δx/f_2      
     end
 
 
