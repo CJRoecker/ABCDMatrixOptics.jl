@@ -1,4 +1,5 @@
 export analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates
+using RecipesBase
 
 """
     removeMA(vma::Vector{<:Any})
@@ -33,11 +34,10 @@ end
 
 #exampe usage
 # par_coordinates, div_coordinates = analyzeSystemGeometrically(SystemMatrix=M)
+# plot(par_coordinates) # automatically generates a quiver plot for the ray bundle
+# LEGACY
 # quiver(div_coordinates.z,div_coordinates.w, quiver=(div_coordinates.dz,div_coordinates.dw))
 # quiver(par_coordinates.z,par_coordinates.w, quiver=(par_coordinates.dz,par_coordinates.dw))
-# LEGACY
-# quiver(div_coordinates[1],div_coordinates[2], quiver=(div_coordinates[3],div_coordinates[4]))
-# quiver(par_coordinates[1],par_coordinates[2], quiver=(par_coordinates[3],par_coordinates[4]))
 
 """
     create_rays(;n = 5, xmin = -10, xmax = 10, kmin = -0.1, kmax = 0.1)
@@ -45,7 +45,7 @@ end
 create a number of n parallel(k=0) and diverging(w=0) rays ranging
 from xmin to xmax and kmin and kmax, respectively.
 """
-function create_rays(;n = 5, xmin = -10, xmax = 10, kmin = -0.1, kmax = 0.1)
+function create_rays(;n = 5, xmin = -10e-3, xmax = 10e-3, kmin = -0.1e-3, kmax = 0.1e-3)
     parallel_rays = Vector{GeometricBeam{Float64}}(undef, 0)
     divergent_rays = Vector{GeometricBeam{Float64}}(undef, 0)
 
@@ -120,11 +120,24 @@ convenience wrapper for standard workflow:
     2. Trace rays through the system
     3. Extract and return the coordinates of the vectors
 """
-function analyzeSystemGeometrically(;SystemMatrix, n=10)
-    par_rays, div_rays = ABCDMatrixOptics.create_rays(n=n);
+function analyzeSystemGeometrically(SystemMatrix; n::Integer=10, x::Number=10e-3, k::Number=0.1)
+    par_rays, div_rays = ABCDMatrixOptics.create_rays(n=n,xmin=-x,xmax=x,kmin=-k,kmax=k)
     div_collection = ABCDMatrixOptics.trace_all(div_rays, SystemMatrix);  # collection of traces of all divergent rays
     par_collection = ABCDMatrixOptics.trace_all(par_rays, SystemMatrix);  # collection of traces of all parallel rays
     div_coordinates = ABCDMatrixOptics.getGeoRayCoordinates(div_collection);
-    par_coordinates = ABCDMatrixOptics.getGeoRayCoordinates(par_collection);
+    par_coordinates = ABCDMatrixOptics.getGeoRayCoordinates(par_collection);    
     return par_coordinates, div_coordinates
+end
+
+function analyzeSystemGeometrically(SystemMatrix, ray::GeometricBeam{T} where T)
+    rays = [ray]
+    traced = ABCDMatrixOptics.trace_all(rays, SystemMatrix);  # collection of traces of all divergent rays
+    coordinates = ABCDMatrixOptics.getGeoRayCoordinates(traced);
+    return coordinates
+end
+
+function analyzeSystemGeometrically(SystemMatrix, ray::Vector{GeometricBeam{T}} where T)
+    traced = ABCDMatrixOptics.trace_all(ray, SystemMatrix);  # collection of traces of all divergent rays
+    coordinates = ABCDMatrixOptics.getGeoRayCoordinates(traced);
+    return coordinates
 end

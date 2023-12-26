@@ -28,9 +28,23 @@ struct GeometricBeam{T} <: AbstractBeam{T}
     zpos::T
 end
 
+
 function GeometricBeam(; w=0.0, k=zero(w), zpos=zero(w))
     w, k, zpos = promote(w, k, zpos)
     return GeometricBeam{typeof(w)}(w, k, zpos)
+end
+
+
+"""
+    GeoRayCoords{T<:Any}
+
+useful Type to store data for a(/several) geometric ray(s). 
+"""
+struct GeoRayCoords{T<:Any}
+    z::Vector{T}
+    w::Vector{T}
+    dz::Vector{T}
+    dw::Vector{T}
 end
 
 """
