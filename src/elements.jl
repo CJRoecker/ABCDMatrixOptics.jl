@@ -196,7 +196,11 @@ function transfer_matrix(elements::Vector{<:Element})
     return mapfoldr(transfer_matrix, (a, b) -> b * a, elements)
 end
 
-function transfer_matrix(elements::Vector{Union{<:Element,MAElement}})
+function transfer_matrix(elements::Vector{Union{<:Element, MAElement}})
+    return mapfoldr(transfer_matrix, (a, b) -> b * a, elements)
+end
+
+function transfer_matrix(elements::Vector{Any})
     return mapfoldr(transfer_matrix, (a, b) -> b * a, elements)
 end
 

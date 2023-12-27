@@ -253,6 +253,30 @@ using Plots
             @test beam_offset_tilted_curved_propagated.k == Δ/f + 2*θ
             end
 
+        @testset "Resonator Stability" begin
+            
+            # create needed optical elements
+            L1 = FreeSpace(500e-3)
+
+            R1 = 800e-3
+            θ1 = 0
+            Δ1 = 0
+
+            R2 = 1000e-3
+            Δ2 = 0
+            θ2 = 0
+
+            M1 = MAMirror(R1, θ1, Δ1)
+            M2 = MAMirror(R2, θ2, Δ2)
+
+            # create optical system
+            # it's built from left to right.
+            # Resonator with curved end Mirrors M1 on the left, M2 on the right. Start Roundtrip just right from M1 
+            System_RT_general = [L1, M2, L1, M1]    
+
+            SP = getStabilityParameter(System_RT_general)   #
+            @test SP == -0.625      #value validated with ReZonator
+        end
 
     return true
 end

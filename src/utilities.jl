@@ -1,4 +1,4 @@
-export analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates
+export removeMA, analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates, getStabilityParameter
 using RecipesBase
 
 """
@@ -140,4 +140,20 @@ function analyzeSystemGeometrically(SystemMatrix, ray::Vector{GeometricBeam{T}} 
     traced = ABCDMatrixOptics.trace_all(ray, SystemMatrix);  # collection of traces of all divergent rays
     coordinates = ABCDMatrixOptics.getGeoRayCoordinates(traced);
     return coordinates
+end
+
+
+"""
+    getStabilityParameter()
+
+returns the stability parameter (A+D)/2 for a given optical System Roundtrip Matrix
+"""
+
+function getStabilityParameter(System_RT_Matrix::Matrix)
+    return (System_RT_Matrix[1,1]+System_RT_Matrix[2,2])/2
+end
+
+function getStabilityParameter(System_RT_Vect::Vector{Any})
+    M = transfer_matrix(removeMA(System_RT_Vect))
+    return getStabilityParameter(M)
 end
