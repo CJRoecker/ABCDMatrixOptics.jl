@@ -1,4 +1,4 @@
-export removeMA, analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates, getStabilityParameter
+export removeMA, analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates, getStabilityParameter, getqParameter
 using RecipesBase
 
 """
@@ -156,4 +156,31 @@ end
 function getStabilityParameter(System_RT_Vect::Vector{Any})
     M = transfer_matrix(removeMA(System_RT_Vect))
     return getStabilityParameter(M)
+end
+
+
+"""
+    getqParameter()
+
+returns the q-parameter of the resonator
+"""
+function getqParameter(System_RT_Matrix::Matrix)
+    A = System_RT_Matrix[1,1]
+    B = System_RT_Matrix[1,2]
+    C = System_RT_Matrix[2,1]
+    D = System_RT_Matrix[2,2]
+
+    q_plus = ((A-D) + sqrt(Complex((A+D)^2-4)))/(2*C)
+    q_minus = ((A-D) - sqrt(Complex((A+D)^2-4)))/(2*C)
+
+    if imag(q_plus) > 0
+        return q_plus
+    else
+        return q_minus
+    end
+end
+
+function getqParameter(System_RT_Vect::Vector{Any})
+    M = transfer_matrix(removeMA(System_RT_Vect))
+    return getqParameter(M)
 end
