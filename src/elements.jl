@@ -123,6 +123,7 @@ MAVector(e::ThinLens) = MAVector{typeof(e.Δ/e.f)}(0, e.Δ/e.f)
 MAVector(e::Mirror) = MAVector{typeof(e.Δ/e.R)}(0, 2*(e.Δ/e.R+e.θ))
 MAVector(;s, σ) = MAVector(s, σ) 
 
+
 """
     MAElement(T)
 
@@ -133,8 +134,8 @@ struct MAElement{T<:Number}
     v::MAVector{T}
 end
 
-MAElement(e::ThinLens) = MAElement{typeof(e.f)}(e, MAVector(e))
-MAElement(e::Mirror) = MAElement{promote_type(typeof(e.R), typeof(e.θ), typeof(e.Δ))}(e, MAVector(e))
+MAElement(e::ThinLens) = MAElement{promote_type(typeof(e.f), typeof(e.Δ/e.f))}(e, MAVector(e))
+MAElement(e::Mirror) = MAElement{promote_type(typeof(e.R), typeof(e.θ), typeof(e.Δ), typeof(e.Δ/e.R))}(e, MAVector(e))
 MAElement(e::Matrix, v::MAVector) = MAElement(userDefinedElement(e),v)
 
 
@@ -143,14 +144,14 @@ MAElement(e::Matrix, v::MAVector) = MAElement(userDefinedElement(e),v)
 
 Creates a thin lens with focal length `f`, angular misalignment 'θ', and displacement 'Δ'.
 """
-MAThinLens(f, θ, Δ) = MAElement(ThinLens{promote_type(typeof(f), typeof(θ), typeof(Δ))}(promote(f, θ, Δ)...))
+MAThinLens(f, θ, Δ) = MAElement(ThinLens{promote_type(typeof(f), typeof(θ), typeof(Δ), typeof(Δ/f))}(promote(f, θ, Δ)...))
 
 """
     Mirror(R, θ, Δ)
 
 Creates a misaligned Mirror with Radius of curvature `R`, angular misalignment 'θ', and displacement 'Δ'..
 """
-MAMirror(R, θ, Δ) = MAElement(Mirror{promote_type(typeof(R), typeof(θ), typeof(Δ))}(promote(R, θ, Δ)...))
+MAMirror(R, θ, Δ) = MAElement(Mirror{promote_type(typeof(R), typeof(θ), typeof(Δ), typeof(Δ/R))}(promote(R, θ, Δ)...))
 
 # definitions of dz
 """

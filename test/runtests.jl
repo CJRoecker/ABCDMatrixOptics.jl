@@ -164,6 +164,95 @@ using Plots
         @test beam_parallel_propagated_MA.k == Δx/f_2      
     end
 
+    @testset "displaced flat mirror" begin
+        # specify optical elements
+        L = 1e3
+        fs1 = FreeSpace(L)
+        Δ = 1e-3
+        θ = 0
+
+        beam_onAxis = GeometricBeam(w=0.0, k=0.0)   # perfect on-axis ray of the aligned system
+        m1_offset_flat = MAMirror(Inf,θ,Δ)          # misaligned (displaced) flat mirror
+        MA_flat_tilted = [fs1,m1_offset_flat,fs1]
+
+        beam_onAxis_propagated_MA = MA_flat_tilted*beam_onAxis;
+        @test beam_onAxis_propagated_MA.w == 0
+        @test beam_onAxis_propagated_MA.k == 0
+    end
+
+    @testset "tilted flat mirror" begin
+        # specify optical elements
+        L = 1e3
+        fs1 = FreeSpace(L)
+        Δ = 0
+        θ = 1e-3
+
+        beam_onAxis = GeometricBeam(w=0.0, k=0.0)   # perfect on-axis ray of the aligned system
+        m1_tilted_flat = MAMirror(Inf,θ,Δ)          # misaligned (displaced) flat mirror
+        MA_flat_tilted = [fs1,m1_tilted_flat,fs1]
+
+        beam_onAxis_propagated_MA = MA_flat_tilted*beam_onAxis;
+        @test beam_onAxis_propagated_MA.w == 2*θ*L
+        @test beam_onAxis_propagated_MA.k == 2*θ
+    end
+
+    @testset "displaced curved mirror" begin
+        # specify optical elements
+        L = 1e3
+        fs1 = FreeSpace(L)    
+        Δ = 5e-3
+        θ = 0
+        f = 1
+        R = 2*f
+        beam_onAxis = GeometricBeam(w=0.0, k=0.0)   # perfect on-axis ray of the aligned system
+
+
+        m1_offset_tilted_curved = MAMirror(R,θ,Δ)
+        MA_curved_offset_tilted = [fs1,m1_offset_tilted_curved,fs1]
+        beam_offset_tilted_curved_propagated = MA_curved_offset_tilted*beam_onAxis
+
+        @test beam_offset_tilted_curved_propagated.w == Δ/f*L
+        @test beam_offset_tilted_curved_propagated.k == Δ/f
+        end
+
+        @testset "tilted curved mirror" begin
+            # specify optical elements
+            L = 1e3
+            fs1 = FreeSpace(L)    
+            Δ = 0
+            θ = 1.5e-3
+            f = 1
+            R = 2*f
+            beam_onAxis = GeometricBeam(w=0.0, k=0.0)   # perfect on-axis ray of the aligned system
+    
+    
+            m1_offset_tilted_curved = MAMirror(R,θ,Δ)
+            MA_curved_offset_tilted = [fs1,m1_offset_tilted_curved,fs1]
+            beam_offset_tilted_curved_propagated = MA_curved_offset_tilted*beam_onAxis
+    
+            @test beam_offset_tilted_curved_propagated.w == 2*θ*L
+            @test beam_offset_tilted_curved_propagated.k == 2*θ
+            end
+
+        @testset "tilted displaced curved mirror" begin
+            # specify optical elements
+            L = 1e3
+            fs1 = FreeSpace(L)    
+            Δ = 5e-3
+            θ = 1.5e-3
+            f = 1.3
+            R = 2*f
+            beam_onAxis = GeometricBeam(w=0.0, k=0.0)   # perfect on-axis ray of the aligned system
+    
+    
+            m1_offset_tilted_curved = MAMirror(R,θ,Δ)
+            MA_curved_offset_tilted = [fs1,m1_offset_tilted_curved,fs1]
+            beam_offset_tilted_curved_propagated = MA_curved_offset_tilted*beam_onAxis
+    
+            @test beam_offset_tilted_curved_propagated.w == Δ/f*L + 2*θ*L
+            @test beam_offset_tilted_curved_propagated.k == Δ/f + 2*θ
+            end
+
 
     return true
 end
