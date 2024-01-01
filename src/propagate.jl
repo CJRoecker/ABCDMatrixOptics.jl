@@ -20,6 +20,11 @@ julia> beam.w ≈ 0
 true
 ```
 """
+function propagate(m::Matrix, b::GeometricBeam{T}) where T
+    e = userDefinedElement(m)
+    w, k = transfer_matrix(e) * [b.w, b.k]
+    return GeometricBeam{T}(w, k, b.zpos + dz(e))
+end
 
 function propagate(e::Element, b::GeometricBeam{T}) where T
     w, k = transfer_matrix(e) * [b.w, b.k]

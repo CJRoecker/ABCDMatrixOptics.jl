@@ -1,4 +1,4 @@
-export removeMA, analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates, getStabilityParameter, getqParameter
+export removeMA, analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates, getStabilityParameter, getqParameter, getABCD, characPoly_q
 using RecipesBase
 
 """
@@ -8,26 +8,18 @@ Converts a misaligned System into an aligned system for comfortable plotting
     of gaussian beam propagation with standard functions. 
 Removes misalignment vectors and does type conversion
 """
+removeMA(el::MAElement) = el.e 
+removeMA(el::Element) = el
+
+
 function removeMA(vma::Vector{<:Any})
     v = []
     for element in vma
-        push!(v, sortElement(element))    
+        push!(v, removeMA(element))    
     end
     return convert(Vector{Element},v)
 end
 
-"""
-    sortElement(el::MAElement)
-
-returns the Matrix of the (mis)aligned optical element
-"""
-function sortElement(el::MAElement)
-    return el.e 
-end
-
-function sortElement(el::Element)
-    return el
-end
 
 # General workflow: use create rays to generate beams. 
 # trace the generated beam through the System
@@ -150,7 +142,7 @@ returns the stability parameter (A+D)/2 for a given optical System Roundtrip Mat
 """
 
 function getStabilityParameter(System_RT_Matrix::Matrix)
-    return (System_RT_Matrix[1,1]+System_RT_Matrix[2,2])/2
+    return (System_RT_Matrix[1,1].+System_RT_Matrix[2,2])./2
 end
 
 function getStabilityParameter(System_RT_Vect::Vector{Any})
@@ -159,17 +151,26 @@ function getStabilityParameter(System_RT_Vect::Vector{Any})
 end
 
 
+function getABCD(M::Matrix)
+    A = M[1,1]
+    B = M[1,2]
+    C = M[2,1]
+    D = M[2,2]
+    return A, B, C, D
+end
+
+function getABCD(System_RT_Vect::Vector{Any})
+    M = transfer_matrix(removeMA(System_RT_Vect))
+    return getABCD(M)
+end
+
 """
     getqParameter()
 
 returns the q-parameter of the resonator
 """
 function getqParameter(System_RT_Matrix::Matrix)
-    A = System_RT_Matrix[1,1]
-    B = System_RT_Matrix[1,2]
-    C = System_RT_Matrix[2,1]
-    D = System_RT_Matrix[2,2]
-
+    A, B , C, D = getABCD(System_RT_Matrix)
     q_plus = ((A-D) + sqrt(Complex((A+D)^2-4)))/(2*C)
     q_minus = ((A-D) - sqrt(Complex((A+D)^2-4)))/(2*C)
 
@@ -183,4 +184,19 @@ end
 function getqParameter(System_RT_Vect::Vector{Any})
     M = transfer_matrix(removeMA(System_RT_Vect))
     return getqParameter(M)
+end
+
+function characPoly_q(System_RT_Matrix::Matrix)
+    A, B , C, D = getABCD(System_RT_Matrix)
+    # characteristic polynomial: Cq^2 + (D-A)q - B = 0
+
+    a = C
+    b = D-A
+    c = -B
+    return a,b,c
+end
+
+function characPoly_q(System_RT_Vect::Vector{Any})
+    M = transfer_matrix(removeMA(System_RT_Vect))
+    return characPolyq(M)
 end
