@@ -112,7 +112,7 @@ convenience wrapper for standard workflow:
     2. Trace rays through the system
     3. Extract and return the coordinates of the vectors
 """
-function analyzeSystemGeometrically(SystemMatrix; n::Integer=10, x::Number=10e-3, k::Number=0.1)
+function analyzeSystemGeometrically(SystemMatrix; n::Integer=10, x::Number=10e-3, k::Number=0.1e-3)
     par_rays, div_rays = ABCDMatrixOptics.create_rays(n=n,xmin=-x,xmax=x,kmin=-k,kmax=k)
     div_collection = ABCDMatrixOptics.trace_all(div_rays, SystemMatrix);  # collection of traces of all divergent rays
     par_collection = ABCDMatrixOptics.trace_all(par_rays, SystemMatrix);  # collection of traces of all parallel rays
