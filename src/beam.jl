@@ -34,6 +34,11 @@ function GeometricBeam(; w=0.0, k=zero(w), zpos=zero(w))
     return GeometricBeam{typeof(w)}(w, k, zpos)
 end
 
+function GeometricBeam(v::Vector{T} where T, zpos=zero(v[1]))
+    w, k, zpos = promote(v[1], v[2], zpos)
+    return GeometricBeam{typeof(w)}(w, k, zpos)
+end
+
 
 """
     GeoRayCoords{T<:Any}

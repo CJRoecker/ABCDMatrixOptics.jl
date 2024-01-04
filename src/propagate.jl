@@ -20,6 +20,19 @@ julia> beam.w ≈ 0
 true
 ```
 """
+function propagate(m::Matrix, b::Vector{T}) where T
+    v = m * b
+    return v
+end
+
+function propagate(e::Element, b::Vector{T}) where T
+    return transfer_matrix(e) * b
+end
+
+function propagate(me::MAElement, b::Vector{T}) where T
+    return transfer_matrix(me.e) * b + me.v
+end
+
 function propagate(m::Matrix, b::GeometricBeam{T}) where T
     e = userDefinedElement(m)
     w, k = transfer_matrix(e) * [b.w, b.k]
@@ -56,6 +69,10 @@ function propagate(es::Vector{<:Any}, b::AbstractBeam)
     return reduce((a,b) -> propagate(b, a), es, init=b)
 end
 
+function propagate(es::Vector{<:Any}, b::Vector)
+    return reduce((a,b) -> propagate(b, a), es, init=b)
+end
+
 # Vector{Union{<:Element, MAElement}}
 # Base.:*(e::Union{Matrix, Element, Vector{<:Element}}, b::AbstractBeam) = propagate(e, b)
 Base.:*(e::Union{Matrix, Element, MAElement, Vector{<:Element}}, b::AbstractBeam) = propagate(e, b)
@@ -63,7 +80,10 @@ Base.:*(e::Union{Matrix, Element, MAElement, Vector{<:Any}}, b::AbstractBeam) = 
 Base.:*(a::Element, b::Element) = transfer_matrix(a) * transfer_matrix(b)
 Base.:*(a::Matrix, b::Element) = a * transfer_matrix(b)
 Base.:*(a::Vector{<:Element}, b::Vector) = transfer_matrix(a) * b 
-# Base.:*(a::Vector{Union{<:Element, MAElement}}, b::Vector) = transfer_matrix(a) * b 
+Base.:*(a::Element, b::Vector) = transfer_matrix(a) * b 
+Base.:*(a::MAElement, b::Vector) = propagate(a, b)
+Base.:*(a::Vector{<:Any}, b::Vector{T} where T) = propagate(a,b) 
+
 
 
 

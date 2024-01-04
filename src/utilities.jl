@@ -1,5 +1,11 @@
-export removeMA, analyzeSystemGeometrically, create_rays, trace_all, getGeoRayCoordinates, getStabilityParameter, getqParameter, getABCD, characPoly_q
+export removeMA, analyzeSystemGeometrically, create_rays, trace_all, 
+getGeoRayCoordinates, getStabilityParameter, getqParameter, getABCD, 
+characPoly_q, findEigenvector, OpticalAssemblyTemplate, alter_OA_byName!,
+getPointerToElement
 using RecipesBase
+using LinearAlgebra
+using Optimization, OptimizationOptimJL
+using DataFrames
 
 """
     removeMA(vma::Vector{<:Any})
@@ -11,13 +17,12 @@ Removes misalignment vectors and does type conversion
 removeMA(el::MAElement) = el.e 
 removeMA(el::Element) = el
 
-
 function removeMA(vma::Vector{<:Any})
-    v = []
+    v = Vector{Element}(undef,0)
     for element in vma
         push!(v, removeMA(element))    
     end
-    return convert(Vector{Element},v)
+    return v
 end
 
 
@@ -199,4 +204,41 @@ end
 function characPoly_q(System_RT_Vect::Vector{Any})
     M = transfer_matrix(removeMA(System_RT_Vect))
     return characPolyq(M)
+end
+
+function err_function(v0::Vector{T} where T, MA::Vector)
+    v1 = MA * v0
+    diff = (v1 - v0)
+    abs_dev = dot(diff,diff)
+    return abs_dev
+end
+
+function findEigenvector(MA::Vector)
+# search for eigenvalue of System
+x0 = zeros(2)
+f = OptimizationFunction(err_function, Optimization.AutoForwardDiff())
+prob = OptimizationProblem(f, x0, MA)
+sol = solve(prob, Newton())
+return sol.u
+end
+
+function OpticalAssemblyTemplate()
+    df = DataFrame()
+    df.Name = []
+    df.Element = []
+    show(df, allrows=true) # allow printing of all rows
+    return df    
+end
+
+function alter_OA_byName!(;df::DataFrame, id::Symbol, el::Union{MAElement,Element})
+    gd = groupby(df, :Name)
+    view = gd[(Name = id,)]
+    view.Element[1] = el     #[1]: access the view at the location of the unique identifier. Alter the content of the view, not the view
+    return df
+end
+
+function getPointerToElement(;df::DataFrame, id::Symbol)
+    gd = groupby(df, :Name)
+    view = gd[(Name = id,)] 
+    return view.Element
 end
