@@ -150,7 +150,7 @@ function getStabilityParameter(System_RT_Matrix::Matrix)
     return (System_RT_Matrix[1,1].+System_RT_Matrix[2,2])./2
 end
 
-function getStabilityParameter(System_RT_Vect::Vector{Any})
+function getStabilityParameter(System_RT_Vect::Vector)
     M = transfer_matrix(removeMA(System_RT_Vect))
     return getStabilityParameter(M)
 end
@@ -186,7 +186,7 @@ function getqParameter(System_RT_Matrix::Matrix)
     end
 end
 
-function getqParameter(System_RT_Vect::Vector{Any})
+function getqParameter(System_RT_Vect::Vector)
     M = transfer_matrix(removeMA(System_RT_Vect))
     return getqParameter(M)
 end
