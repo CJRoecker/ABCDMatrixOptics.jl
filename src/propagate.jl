@@ -1,5 +1,6 @@
 export propagate, trace
 
+using DataFrames
 """
     propagate(e::Union{Element, Vector{<:Element}}, b)
 
@@ -83,6 +84,8 @@ Base.:*(a::Vector{<:Element}, b::Vector) = transfer_matrix(a) * b
 Base.:*(a::Element, b::Vector) = transfer_matrix(a) * b 
 Base.:*(a::MAElement, b::Vector) = propagate(a, b)
 Base.:*(a::Vector{<:Any}, b::Vector{T} where T) = propagate(a,b) 
+Base.:*(a::DataFrame, b::AbstractBeam) = propagate(removeMA(a.Element),b) 
+
 
 
 

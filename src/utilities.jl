@@ -1,7 +1,7 @@
 export removeMA, analyzeSystemGeometrically, create_rays, trace_all, 
 getGeoRayCoordinates, getStabilityParameter, getqParameter, getABCD, 
 characPoly_q, findEigenvector, OpticalAssemblyTemplate, alter_OA_byName!,
-getPointerToElement
+getPointerToElement, propagate_to_Element
 using RecipesBase
 using LinearAlgebra
 using Optimization, OptimizationOptimJL
@@ -243,4 +243,8 @@ function getPointerToElement(;df::DataFrame, id::Symbol)
     gd = groupby(df, :Name)
     view = gd[(Name = id,)] 
     return view.Element
+end
+
+function propagate_to_Element(;df::DataFrame, beam::AbstractBeam, index::Int)
+    return df[1:index, :] * beam
 end
