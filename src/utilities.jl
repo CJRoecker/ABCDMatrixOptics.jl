@@ -233,7 +233,9 @@ end
 function alter_OA_byName!(;df::DataFrame, id::Symbol, el::Union{MAElement,Element})
     gd = groupby(df, :Name)
     view = gd[(Name = id,)]
-    view.Element[1] = el     #[1]: access the view at the location of the unique identifier. Alter the content of the view, not the view
+    for i in eachindex(view.Element)
+        view.Element[i] = el
+    end
     return df
 end
 
